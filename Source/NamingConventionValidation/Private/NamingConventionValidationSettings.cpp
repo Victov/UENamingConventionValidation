@@ -8,6 +8,8 @@ UNamingConventionValidationSettings::UNamingConventionValidationSettings()
     bAllowValidationOnlyInGameFolder = true;
     bDoesValidateOnSave = true;
     BlueprintsPrefix = "BP_";
+
+    ResetValidatorClassDescriptionsToEpicDefaults();
 }
 
 bool UNamingConventionValidationSettings::IsPathExcludedFromValidation(const FString& Path) const
@@ -53,6 +55,7 @@ void UNamingConventionValidationSettings::PostProcessSettings()
     for (FNamingConventionValidationClassDescription& ClassDescription : ClassDescriptions)
     {
         ClassDescription.Class = ClassDescription.ClassPath.LoadSynchronous();
+        ensure(IsValid(ClassDescription.Class));
         UE_CLOG(ClassDescription.Class == nullptr, LogNamingConventionValidation, Warning, TEXT("Impossible to get a valid UClass for the class path %s"), *ClassDescription.ClassPath.ToString());
     }
 
@@ -79,6 +82,34 @@ void UNamingConventionValidationSettings::PostProcessSettings()
     {
         ExcludedDirectories.Add(EngineDirectoryPath);
     }
+}
+
+void UNamingConventionValidationSettings::ResetValidatorClassDescriptionsToEpicDefaults()
+{
+    auto AddDefaultClassDescriptionWithPrefix = [this](FString InPath, FString Prefix) -> void
+    {
+        const FSoftObjectPath Path(InPath);
+        FNamingConventionValidationClassDescription Desc;
+        Desc.ClassPath = Path;
+        Desc.Prefix = Prefix;
+        ClassDescriptions.Add(Desc);
+    };
+
+    ClassDescriptions.Empty();
+
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.ActorComponent"), TEXT("AC_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.AnimInstance"), TEXT("ABP_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.PhysicsAsset"), TEXT("PHYS_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.Material"), TEXT("M_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.Texture"), TEXT("T_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.DataTable"), TEXT("DT_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/UMG.UserWidget"), TEXT("WBP_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/CoreUObject.Enum"), TEXT("E_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/CoreUObject.Struct"), TEXT("F_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.CurveTable"), TEXT("CT_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.SkeletalMesh"), TEXT("SK_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.StaticMesh"), TEXT("SM_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/PhysicsCore.PhysicalMaterial"), TEXT("PM_"));
 }
 
 #if WITH_EDITOR

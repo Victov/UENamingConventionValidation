@@ -1,8 +1,8 @@
 #pragma once
 
-#include <CoreMinimal.h>
-#include <Engine/DeveloperSettings.h>
-#include <Engine/EngineTypes.h>
+#include "CoreMinimal.h"
+#include "Engine/DeveloperSettings.h"
+#include "Engine/EngineTypes.h"
 
 #include "NamingConventionValidationSettings.generated.h"
 
@@ -24,7 +24,6 @@ struct FNamingConventionValidationClassDescription
     UPROPERTY( Config, EditAnywhere, Meta = ( AllowAbstract = true ) )
     TSoftClassPtr<UObject> ClassPath;
 
-    //@TODO: Replace with TSubclassOf
     UPROPERTY( Transient )
     UClass* Class;
 
@@ -49,7 +48,7 @@ public:
     bool IsPathExcludedFromValidation( const FString & Path ) const;
 
     UPROPERTY( Config, EditAnywhere, Meta = ( LongPackageName, ConfigRestartRequired = true ) )
-    TArray< FDirectoryPath > ExcludedDirectories;
+    TArray<FDirectoryPath> ExcludedDirectories;
 
     UPROPERTY( Config, EditAnywhere )
     uint8 bLogWarningWhenNoClassDescriptionForAsset : 1;
@@ -84,6 +83,11 @@ public:
     FString BlueprintsPrefix;
 
     void PostProcessSettings();
+
+    /* Adds validator class descriptions to some sensible defaults based on Epics recommendations.
+     * See https://docs.unrealengine.com/5.1/en-US/recommended-asset-naming-conventions-in-unreal-engine-projects/ 
+     * for more information */
+    void ResetValidatorClassDescriptionsToEpicDefaults();
 
 #if WITH_EDITOR
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

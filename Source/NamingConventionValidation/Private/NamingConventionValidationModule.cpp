@@ -3,170 +3,176 @@
 #include "EditorNamingValidatorSubsystem.h"
 #include "NamingConventionValidationCommandlet.h"
 
-#include <AssetRegistryModule.h>
-#include <AssetToolsModule.h>
-#include <ContentBrowserDelegates.h>
-#include <ContentBrowserModule.h>
-#include <EditorStyleSet.h>
-#include <Framework/Application/SlateApplication.h>
-#include <Framework/MultiBox/MultiBoxBuilder.h>
-#include <Framework/MultiBox/MultiBoxExtender.h>
-#include <LevelEditor.h>
-#include <Misc/MessageDialog.h>
-#include <Modules/ModuleManager.h>
-#include <UObject/Object.h>
-#include <UObject/ObjectSaveContext.h>
+#include "AssetRegistryModule.h"
+#include "AssetToolsModule.h"
+#include "ContentBrowserDelegates.h"
+#include "ContentBrowserModule.h"
+#include "EditorStyleSet.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Framework/MultiBox/MultiBoxExtender.h"
+#include "LevelEditor.h"
+#include "Misc/MessageDialog.h"
+#include "Modules/ModuleManager.h"
+#include "UObject/Object.h"
+#include "UObject/ObjectSaveContext.h"
 
 #define LOCTEXT_NAMESPACE "NamingConventionValidationModule"
 
-void FindAssetDependencies( const FAssetRegistryModule & asset_registry_module, const FAssetData & asset_data, TSet< FAssetData > & dependent_assets )
+void FindAssetDependencies(const FAssetRegistryModule& AssetRegistryModule, const FAssetData& AssetData, TSet< FAssetData >& DependentAssets)
 {
-    if ( asset_data.IsValid() )
+    if (AssetData.IsValid())
     {
-        if ( const auto object = asset_data.GetAsset() )
+        if (const UObject* Object = AssetData.GetAsset())
         {
-            const auto selected_package_name = object->GetOutermost()->GetFName();
-            const auto package_string = selected_package_name.ToString();
+            const FName SelectedPackageName = Object->GetOutermost()->GetFName();
+            const FString PackageString = SelectedPackageName.ToString();
 
-            if ( !dependent_assets.Contains( asset_data ) )
+            if (!DependentAssets.Contains(AssetData))
             {
-                dependent_assets.Add( asset_data );
+                DependentAssets.Add(AssetData);
 
-                TArray< FName > dependencies;
-                asset_registry_module.Get().GetDependencies( selected_package_name, dependencies, UE::AssetRegistry::EDependencyCategory::Package );
+                TArray< FName > Dependencies;
+                AssetRegistryModule.Get().GetDependencies(SelectedPackageName, Dependencies, UE::AssetRegistry::EDependencyCategory::Package);
 
-                for ( const auto dependency : dependencies )
+                for (const FName& Dependency : Dependencies)
                 {
-                    const auto dependency_package_string = dependency.ToString();
-                    auto dependency_object_string = FString::Printf( TEXT( "%s.%s" ), *dependency_package_string, *FPackageName::GetLongPackageAssetName( dependency_package_string ) );
+                    const FString DependencyPackageString = Dependency.ToString();
+                    FString DependencyObjectString = FString::Printf(TEXT("%s.%s"), *DependencyPackageString, *FPackageName::GetLongPackageAssetName(DependencyPackageString));
 
                     // recurse on each dependency
-                    const FName object_path( *dependency_object_string );
-                    auto dependent_asset = asset_registry_module.Get().GetAssetByObjectPath( object_path );
+                    const FName ObjectPath(*DependencyObjectString);
+                    FAssetData DependentAsset = AssetRegistryModule.Get().GetAssetByObjectPath(ObjectPath);
 
-                    FindAssetDependencies( asset_registry_module, dependent_asset, dependent_assets );
+                    FindAssetDependencies(AssetRegistryModule, DependentAsset, DependentAssets);
                 }
             }
         }
     }
 }
 
-void OnPackageSaved( const FString & /*package_file_name*/, UPackage* package, FObjectPostSaveContext context )
+void OnPackageSaved(const FString& /*package_file_name*/, UPackage* Package, FObjectPostSaveContext Context)
 {
-    if ( auto * editor_validation_subsystem = GEditor->GetEditorSubsystem< UEditorNamingValidatorSubsystem >() )
+    if (GEditor)
     {
-        editor_validation_subsystem->ValidateSavedPackage( package->GetFName() );
+        if (UEditorNamingValidatorSubsystem* EditorValidationSubsystem = GEditor->GetEditorSubsystem<UEditorNamingValidatorSubsystem>())
+        {
+            EditorValidationSubsystem->ValidateSavedPackage(Package->GetFName());
+        }
     }
 }
 
-void ValidateAssets( const TArray< FAssetData > selected_assets )
+void ValidateAssets(const TArray<FAssetData> SelectedAssets)
 {
-    if ( auto * editor_validation_subsystem = GEditor->GetEditorSubsystem< UEditorNamingValidatorSubsystem >() )
+    if (GEditor)
     {
-        editor_validation_subsystem->ValidateAssets( selected_assets );
+        if (UEditorNamingValidatorSubsystem* EditorValidationSubsystem = GEditor->GetEditorSubsystem<UEditorNamingValidatorSubsystem>())
+        {
+            EditorValidationSubsystem->ValidateAssets(SelectedAssets);
+        }
     }
 }
 
-void ValidateFolders( const TArray< FString > selected_folders )
+void ValidateFolders(const TArray< FString > SelectedFolders)
 {
-    auto & asset_registry_module = FModuleManager::Get().LoadModuleChecked< FAssetRegistryModule >( TEXT( "AssetRegistry" ) );
+    FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 
-    FARFilter filter;
-    filter.bRecursivePaths = true;
+    FARFilter Filter;
+    Filter.bRecursivePaths = true;
 
-    for ( const auto & folder : selected_folders )
+    for (const FString& Folder : SelectedFolders)
     {
-        filter.PackagePaths.Emplace( *folder );
+        Filter.PackagePaths.Emplace(*Folder);
     }
 
-    TArray< FAssetData > asset_list;
-    asset_registry_module.Get().GetAssets( filter, asset_list );
+    TArray<FAssetData> AssetList;
+    AssetRegistryModule.Get().GetAssets(Filter, AssetList);
 
-    ValidateAssets( asset_list );
+    ValidateAssets(AssetList);
 }
 
-void CreateDataValidationContentBrowserAssetMenu( FMenuBuilder & menu_builder, const TArray< FAssetData > selected_assets )
+void CreateDataValidationContentBrowserAssetMenu(FMenuBuilder& MenuBuilder, const TArray< FAssetData > SelectedAssets)
 {
-    menu_builder.AddMenuSeparator();
-    menu_builder.AddMenuEntry(
-        LOCTEXT( "NamingConventionValidateAssetsTabTitle", "Validate Assets Naming Convention" ),
-        LOCTEXT( "NamingConventionValidateAssetsTooltipText", "Run naming convention validation on these assets." ),
+    MenuBuilder.AddMenuSeparator();
+    MenuBuilder.AddMenuEntry(
+        LOCTEXT("NamingConventionValidateAssetsTabTitle", "Validate Assets Naming Convention"),
+        LOCTEXT("NamingConventionValidateAssetsTooltipText", "Run naming convention validation on these assets."),
         FSlateIcon(),
-        FUIAction( FExecuteAction::CreateStatic( ValidateAssets, selected_assets ) ) );
+        FUIAction(FExecuteAction::CreateStatic(ValidateAssets, SelectedAssets)));
 }
 
-TSharedRef< FExtender > OnExtendContentBrowserAssetSelectionMenu( const TArray< FAssetData > & selected_assets )
+TSharedRef<FExtender> OnExtendContentBrowserAssetSelectionMenu(const TArray<FAssetData>& SelectedAssets)
 {
-    TSharedRef< FExtender > extender( new FExtender() );
+    TSharedRef<FExtender> Extender(new FExtender());
 
-    extender->AddMenuExtension(
+    Extender->AddMenuExtension(
         "AssetContextAdvancedActions",
         EExtensionHook::After,
         nullptr,
-        FMenuExtensionDelegate::CreateStatic( CreateDataValidationContentBrowserAssetMenu, selected_assets ) );
+        FMenuExtensionDelegate::CreateStatic(CreateDataValidationContentBrowserAssetMenu, SelectedAssets));
 
-    return extender;
+    return Extender;
 }
 
-void CreateDataValidationContentBrowserPathMenu( FMenuBuilder & menu_builder, const TArray< FString > selected_paths )
+void CreateDataValidationContentBrowserPathMenu(FMenuBuilder& MenuBuilder, const TArray<FString> SelectedPaths)
 {
-    menu_builder.AddMenuEntry(
-        LOCTEXT( "NamingConventionValidateAssetsPathTabTitle", "Validate Assets Naming Convention in Folder" ),
-        LOCTEXT( "NamingConventionValidateAssetsPathTooltipText", "Runs naming convention validation on the assets in the selected folder." ),
+    MenuBuilder.AddMenuEntry(
+        LOCTEXT("NamingConventionValidateAssetsPathTabTitle", "Validate Assets Naming Convention in Folder"),
+        LOCTEXT("NamingConventionValidateAssetsPathTooltipText", "Runs naming convention validation on the assets in the selected folder."),
         FSlateIcon(),
-        FUIAction( FExecuteAction::CreateStatic( ValidateFolders, selected_paths ) ) );
+        FUIAction(FExecuteAction::CreateStatic(ValidateFolders, SelectedPaths)));
 }
 
-TSharedRef< FExtender > OnExtendContentBrowserPathSelectionMenu( const TArray< FString > & selected_paths )
+TSharedRef<FExtender> OnExtendContentBrowserPathSelectionMenu(const TArray< FString >& SelectedPaths)
 {
-    TSharedRef< FExtender > extender( new FExtender() );
+    TSharedRef< FExtender > Extender(new FExtender());
 
-    extender->AddMenuExtension(
+    Extender->AddMenuExtension(
         "PathContextBulkOperations",
         EExtensionHook::After,
         nullptr,
-        FMenuExtensionDelegate::CreateStatic( CreateDataValidationContentBrowserPathMenu, selected_paths ) );
+        FMenuExtensionDelegate::CreateStatic(CreateDataValidationContentBrowserPathMenu, SelectedPaths));
 
-    return extender;
+    return Extender;
 }
 
 FText MenuValidateDataGetTitle()
 {
-    auto & asset_registry_module = FModuleManager::LoadModuleChecked< FAssetRegistryModule >( "AssetRegistry" );
-    if ( asset_registry_module.Get().IsLoadingAssets() )
+    FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+    if (AssetRegistryModule.Get().IsLoadingAssets())
     {
-        return LOCTEXT( "NamingConventionValidationTitleDA", "Validate Naming Convention [Discovering Assets]" );
+        return LOCTEXT("NamingConventionValidationTitleDA", "Validate Naming Convention [Discovering Assets]");
     }
-    return LOCTEXT( "NamingConventionValidationTitle", "Naming Convention..." );
+    return LOCTEXT("NamingConventionValidationTitle", "Naming Convention...");
 }
 
 void MenuValidateData()
 {
-    // make sure the asset registry is finished building
-    auto & asset_registry_module = FModuleManager::LoadModuleChecked< FAssetRegistryModule >( "AssetRegistry" );
-    if ( asset_registry_module.Get().IsLoadingAssets() )
+    //Make sure the asset registry is finished building
+    FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+    if (AssetRegistryModule.Get().IsLoadingAssets())
     {
-        FMessageDialog::Open( EAppMsgType::Ok, LOCTEXT( "AssetsStillScanningError", "Cannot run naming convention validation while still discovering assets." ) );
+        FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("AssetsStillScanningError", "Cannot run naming convention validation while still discovering assets."));
         return;
     }
 
-    const auto success = UNamingConventionValidationCommandlet::ValidateData();
+    const bool bSuccess = UNamingConventionValidationCommandlet::ValidateData();
 
-    if ( !success )
+    if (!bSuccess)
     {
-        FMessageDialog::Open( EAppMsgType::Ok, LOCTEXT( "NamingConventionValidationError", "An error was encountered during naming convention validation. See the log for details." ) );
+        FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NamingConventionValidationError", "An error was encountered during naming convention validation. See the log for details."));
     }
 }
 
-void NamingConventionValidationMenuCreationDelegate( FMenuBuilder & menu_builder )
+void NamingConventionValidationMenuCreationDelegate(FMenuBuilder& MenuBuilder)
 {
-    menu_builder.BeginSection( "NamingConventionValidation", LOCTEXT( "NamingConventionValidation", "NamingConventionValidation" ) );
-    menu_builder.AddMenuEntry(
-        TAttribute< FText >::Create( &MenuValidateDataGetTitle ),
-        LOCTEXT( "NamingConventionValidationTooltip", "Validates all naming convention in content directory." ),
-        FSlateIcon( FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon" ),
-        FUIAction( FExecuteAction::CreateStatic( &MenuValidateData ) ) );
-    menu_builder.EndSection();
+    MenuBuilder.BeginSection("NamingConventionValidation", LOCTEXT("NamingConventionValidation", "NamingConventionValidation"));
+    MenuBuilder.AddMenuEntry(
+        TAttribute< FText >::Create(&MenuValidateDataGetTitle),
+        LOCTEXT("NamingConventionValidationTooltip", "Validates all naming convention in content directory."),
+        FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
+        FUIAction(FExecuteAction::CreateStatic(&MenuValidateData)));
+    MenuBuilder.EndSection();
 }
 
 class FNamingConventionValidationModule : public INamingConventionValidationModule
@@ -176,61 +182,62 @@ public:
     void ShutdownModule() override;
 
 private:
-    TSharedPtr< FExtender > MenuExtender;
+    TSharedPtr<FExtender> MenuExtender;
     FDelegateHandle ContentBrowserAssetExtenderDelegateHandle;
     FDelegateHandle ContentBrowserPathExtenderDelegateHandle;
     FDelegateHandle OnPackageSavedDelegateHandle;
 };
 
-IMPLEMENT_MODULE( FNamingConventionValidationModule, NamingConventionValidation )
+IMPLEMENT_MODULE(FNamingConventionValidationModule, NamingConventionValidation)
 
 void FNamingConventionValidationModule::StartupModule()
 {
-    if ( !IsRunningCommandlet() && !IsRunningGame() && FSlateApplication::IsInitialized() )
+    if (!IsRunningCommandlet() && !IsRunningGame() && FSlateApplication::IsInitialized())
     {
-        auto & content_browser_module = FModuleManager::LoadModuleChecked< FContentBrowserModule >( TEXT( "ContentBrowser" ) );
-        auto & cb_asset_menu_extender_delegates = content_browser_module.GetAllAssetViewContextMenuExtenders();
+        FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+        TArray<FContentBrowserMenuExtender_SelectedAssets>& ContentBrowserMenuExtenderDelegates = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
 
-        cb_asset_menu_extender_delegates.Add( FContentBrowserMenuExtender_SelectedAssets::CreateStatic( OnExtendContentBrowserAssetSelectionMenu ) );
-        ContentBrowserAssetExtenderDelegateHandle = cb_asset_menu_extender_delegates.Last().GetHandle();
+        ContentBrowserMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateStatic(OnExtendContentBrowserAssetSelectionMenu));
+        ContentBrowserAssetExtenderDelegateHandle = ContentBrowserMenuExtenderDelegates.Last().GetHandle();
 
-        auto & cb_folder_menu_extender_delegates = content_browser_module.GetAllPathViewContextMenuExtenders();
+        TArray<FContentBrowserMenuExtender_SelectedPaths>& ContentBrowserFolderMenuExtenderDelegates = ContentBrowserModule.GetAllPathViewContextMenuExtenders();
 
-        cb_folder_menu_extender_delegates.Add( FContentBrowserMenuExtender_SelectedPaths::CreateStatic( OnExtendContentBrowserPathSelectionMenu ) );
-        ContentBrowserPathExtenderDelegateHandle = cb_folder_menu_extender_delegates.Last().GetHandle();
+        ContentBrowserFolderMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedPaths::CreateStatic(OnExtendContentBrowserPathSelectionMenu));
+        ContentBrowserPathExtenderDelegateHandle = ContentBrowserFolderMenuExtenderDelegates.Last().GetHandle();
 
-        MenuExtender = MakeShareable( new FExtender );
-        MenuExtender->AddMenuExtension( "FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateStatic( NamingConventionValidationMenuCreationDelegate ) );
+        MenuExtender = MakeShareable(new FExtender);
+        MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateStatic(NamingConventionValidationMenuCreationDelegate));
 
-        auto & level_editor_module = FModuleManager::LoadModuleChecked< FLevelEditorModule >( "LevelEditor" );
-        level_editor_module.GetMenuExtensibilityManager()->AddExtender( MenuExtender );
+        FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+        LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 
-        OnPackageSavedDelegateHandle = UPackage::PackageSavedWithContextEvent.AddStatic( OnPackageSaved );
+        OnPackageSavedDelegateHandle = UPackage::PackageSavedWithContextEvent.AddStatic(OnPackageSaved);
     }
 }
 
 void FNamingConventionValidationModule::ShutdownModule()
 {
-    if ( !IsRunningCommandlet() && !IsRunningGame() && !IsRunningDedicatedServer() )
+    if (!IsRunningCommandlet() && !IsRunningGame() && !IsRunningDedicatedServer())
     {
-        if ( auto * content_browser_module = FModuleManager::GetModulePtr< FContentBrowserModule >( TEXT( "ContentBrowser" ) ) )
+        if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
         {
-            auto & content_browser_menu_extender_delegates = content_browser_module->GetAllAssetViewContextMenuExtenders();
-            content_browser_menu_extender_delegates.RemoveAll( [ &extender_delegate = ContentBrowserAssetExtenderDelegateHandle ]( const FContentBrowserMenuExtender_SelectedAssets & delegate ) {
-                return delegate.GetHandle() == extender_delegate;
-            } );
-            content_browser_menu_extender_delegates.RemoveAll( [ &extender_delegate = ContentBrowserAssetExtenderDelegateHandle ]( const FContentBrowserMenuExtender_SelectedAssets & delegate ) {
-                return delegate.GetHandle() == extender_delegate;
-            } );
+            TArray<FContentBrowserMenuExtender_SelectedAssets>& ContentBrowserMenuExtenderDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
+            ContentBrowserMenuExtenderDelegates.RemoveAll([&ExtenderDelegate = ContentBrowserAssetExtenderDelegateHandle](const FContentBrowserMenuExtender_SelectedAssets& Delegate) {
+                return Delegate.GetHandle() == ExtenderDelegate;
+            });
+            //@TODO: why is this being removed twice?!
+            ContentBrowserMenuExtenderDelegates.RemoveAll([&ExtenderDelegate = ContentBrowserAssetExtenderDelegateHandle](const FContentBrowserMenuExtender_SelectedAssets& Delegate) {
+                return Delegate.GetHandle() == ExtenderDelegate;
+            });
         }
 
-        if ( auto * level_editor_module = FModuleManager::GetModulePtr< FLevelEditorModule >( "LevelEditor" ) )
+        if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>("LevelEditor"))
         {
-            level_editor_module->GetMenuExtensibilityManager()->RemoveExtender( MenuExtender );
+            LevelEditorModule->GetMenuExtensibilityManager()->RemoveExtender(MenuExtender);
         }
         MenuExtender = nullptr;
 
-        UPackage::PackageSavedWithContextEvent.Remove( OnPackageSavedDelegateHandle );
+        UPackage::PackageSavedWithContextEvent.Remove(OnPackageSavedDelegateHandle);
     }
 }
 

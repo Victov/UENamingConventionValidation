@@ -10,35 +10,36 @@ UNamingConventionValidationSettings::UNamingConventionValidationSettings()
     BlueprintsPrefix = "BP_";
 }
 
-bool UNamingConventionValidationSettings::IsPathExcludedFromValidation( const FString & path ) const
+bool UNamingConventionValidationSettings::IsPathExcludedFromValidation(const FString& Path) const
 {
-    if ( !path.StartsWith( "/Game/" ) && bAllowValidationOnlyInGameFolder )
+    if (!Path.StartsWith("/Game/") && bAllowValidationOnlyInGameFolder)
     {
-        auto can_process_folder = NonGameFoldersDirectoriesToProcess.FindByPredicate( [ &path ]( const auto & directory ) {
-            return path.StartsWith( directory.Path );
-        } ) != nullptr;
-
-        if ( !can_process_folder )
+        bool bCanProcessFolder = NonGameFoldersDirectoriesToProcess.FindByPredicate([&Path](const auto& Directory)
         {
-            can_process_folder = NonGameFoldersDirectoriesToProcessContainingToken.FindByPredicate( [ &path ]( const auto & token ) {
-                return path.Contains( token );
-            } ) != nullptr;
+            return Path.StartsWith(Directory.Path);
+        }) != nullptr;
+
+        if (!bCanProcessFolder)
+        {
+            bCanProcessFolder = NonGameFoldersDirectoriesToProcessContainingToken.FindByPredicate([&Path](const auto& Token) {
+                return Path.Contains(Token);
+            }) != nullptr;
         }
 
-        if ( !can_process_folder )
+        if (!bCanProcessFolder)
         {
             return true;
         }
     }
 
-    if ( path.StartsWith( "/Game/Developers/" ) && !bAllowValidationInDevelopersFolder )
+    if (Path.StartsWith("/Game/Developers/") && !bAllowValidationInDevelopersFolder)
     {
         return true;
     }
 
-    for ( const auto & excluded_path : ExcludedDirectories )
+    for (const FDirectoryPath& ExcludedPath : ExcludedDirectories)
     {
-        if ( path.StartsWith( excluded_path.Path ) )
+        if (Path.StartsWith(ExcludedPath.Path))
         {
             return true;
         }
@@ -49,35 +50,34 @@ bool UNamingConventionValidationSettings::IsPathExcludedFromValidation( const FS
 
 void UNamingConventionValidationSettings::PostProcessSettings()
 {
-    for ( auto & class_description : ClassDescriptions )
+    for (FNamingConventionValidationClassDescription& ClassDescription : ClassDescriptions)
     {
-        class_description.Class = class_description.ClassPath.LoadSynchronous();
-
-        UE_CLOG( class_description.Class == nullptr, LogNamingConventionValidation, Warning, TEXT( "Impossible to get a valid UClass for the classpath %s" ), *class_description.ClassPath.ToString() );
+        ClassDescription.Class = ClassDescription.ClassPath.LoadSynchronous();
+        UE_CLOG(ClassDescription.Class == nullptr, LogNamingConventionValidation, Warning, TEXT("Impossible to get a valid UClass for the class path %s"), *ClassDescription.ClassPath.ToString());
     }
 
     ClassDescriptions.Sort();
 
-    for ( auto & class_path : ExcludedClassPaths )
+    for (TSoftClassPtr<UObject>& ExcludedClassPath : ExcludedClassPaths)
     {
-        auto * excluded_class = class_path.LoadSynchronous();
-        UE_CLOG( excluded_class == nullptr, LogNamingConventionValidation, Warning, TEXT( "Impossible to get a valid UClass for the excluded classpath %s" ), *class_path.ToString() );
+        UClass* ExcludedClass = ExcludedClassPath.LoadSynchronous();
+        UE_CLOG(ExcludedClass == nullptr, LogNamingConventionValidation, Warning, TEXT("Impossible to get a valid UClass for the excluded class path %s"), *ExcludedClassPath.ToString());
 
-        if ( excluded_class != nullptr )
+        if (IsValid(ExcludedClass))
         {
-            ExcludedClasses.Add( excluded_class );
+            ExcludedClasses.Add(ExcludedClass);
         }
     }
 
-    static const FDirectoryPath
-        EngineDirectoryPath( { TEXT( "/Engine/" ) } );
+    static const FDirectoryPath EngineDirectoryPath({ TEXT("/Engine/") });
 
     // Cannot use AddUnique since FDirectoryPath does not have operator==
-    if ( !ExcludedDirectories.ContainsByPredicate( []( const auto & item ) {
-             return item.Path == EngineDirectoryPath.Path;
-         } ) )
+    if (!ExcludedDirectories.ContainsByPredicate([](const FDirectoryPath& Item)
     {
-        ExcludedDirectories.Add( EngineDirectoryPath );
+        return Item.Path == EngineDirectoryPath.Path;
+    }))
+    {
+        ExcludedDirectories.Add(EngineDirectoryPath);
     }
 }
 

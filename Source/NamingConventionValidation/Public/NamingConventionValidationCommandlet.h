@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Commandlets/Commandlet.h>
+#include "Commandlets/Commandlet.h"
 
 #include "NamingConventionValidationCommandlet.generated.h"
 
@@ -14,7 +14,7 @@ public:
     UNamingConventionValidationCommandlet();
 
     // Begin UCommandlet Interface
-    int32 Main( const FString & params ) override;
+    int32 Main( const FString & Params ) override;
     // End UCommandlet Interface
 
     static bool ValidateData();

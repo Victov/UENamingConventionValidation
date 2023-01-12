@@ -2,20 +2,20 @@
 
 UEditorNamingValidatorBase::UEditorNamingValidatorBase()
 {
-    ItIsEnabled = true;
+    bIsEnabled = true;
 }
 
-bool UEditorNamingValidatorBase::CanValidateAssetNaming_Implementation( const UClass * /*asset_class*/, const FAssetData & /*asset_data*/ ) const
+bool UEditorNamingValidatorBase::CanValidateAssetNaming_Implementation(const UClass* /*AssetClass*/, const FAssetData& /*AssetData*/) const
 {
     return false;
 }
 
-ENamingConventionValidationResult UEditorNamingValidatorBase::ValidateAssetNaming_Implementation( FText & /*error_message*/, const UClass * /*asset_class*/, const FAssetData & /*asset_data*/ )
+ENamingConventionValidationResult UEditorNamingValidatorBase::ValidateAssetNaming_Implementation(FText& /*ErrorMessage*/, const UClass* /*AssetClass*/, const FAssetData& /*AssetData*/)
 {
     return ENamingConventionValidationResult::Unknown;
 }
 
 bool UEditorNamingValidatorBase::IsEnabled() const
 {
-    return ItIsEnabled;
+    return bIsEnabled;
 }

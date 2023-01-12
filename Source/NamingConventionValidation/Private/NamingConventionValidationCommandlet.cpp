@@ -3,54 +3,54 @@
 #include "NamingConventionValidationLog.h"
 #include "EditorNamingValidatorSubsystem.h"
 
-#include <Editor.h>
-#include <AssetRegistryHelpers.h>
-#include <AssetRegistryModule.h>
-#include <IAssetRegistry.h>
+#include "Editor.h"
+#include "AssetRegistryHelpers.h"
+#include "AssetRegistryModule.h"
+#include "IAssetRegistry.h"
 
 UNamingConventionValidationCommandlet::UNamingConventionValidationCommandlet()
 {
     LogToConsole = false;
 }
 
-int32 UNamingConventionValidationCommandlet::Main( const FString & params )
+int32 UNamingConventionValidationCommandlet::Main(const FString& Params)
 {
-    UE_LOG( LogNamingConventionValidation, Log, TEXT( "--------------------------------------------------------------------------------------------" ) );
-    UE_LOG( LogNamingConventionValidation, Log, TEXT( "Running NamingConventionValidation Commandlet" ) );
-    TArray< FString > tokens;
-    TArray< FString > switches;
-    TMap< FString, FString > params_map;
-    ParseCommandLine( *params, tokens, switches, params_map );
+    UE_LOG(LogNamingConventionValidation, Log, TEXT("--------------------------------------------------------------------------------------------"));
+    UE_LOG(LogNamingConventionValidation, Log, TEXT("Running NamingConventionValidation Commandlet"));
+    TArray<FString> Tokens;
+    TArray<FString> Switches;
+    TMap<FString, FString> ParamsMap;
+    ParseCommandLine(*Params, Tokens, Switches, ParamsMap);
 
-    // validate data
-    if ( !ValidateData() )
+    if (!ValidateData())
     {
-        UE_LOG( LogNamingConventionValidation, Warning, TEXT( "Errors occurred while validating naming convention" ) );
+        UE_LOG(LogNamingConventionValidation, Warning, TEXT("Errors occurred while validating naming convention"));
         return 2; // return something other than 1 for error since the engine will return 1 if any other system (possibly unrelated) logged errors during execution.
     }
 
-    UE_LOG( LogNamingConventionValidation, Log, TEXT( "Successfully finished running NamingConventionValidation Commandlet" ) );
-    UE_LOG( LogNamingConventionValidation, Log, TEXT( "--------------------------------------------------------------------------------------------" ) );
+    UE_LOG(LogNamingConventionValidation, Log, TEXT("Successfully finished running NamingConventionValidation Commandlet"));
+    UE_LOG(LogNamingConventionValidation, Log, TEXT("--------------------------------------------------------------------------------------------"));
     return 0;
 }
 
-//static
 bool UNamingConventionValidationCommandlet::ValidateData()
 {
-    auto & asset_registry_module = FModuleManager::LoadModuleChecked< FAssetRegistryModule >( AssetRegistryConstants::ModuleName );
+    TArray<FAssetData> AssetDataList;
+    FARFilter Filter;
+    Filter.bRecursivePaths = true;
+    Filter.PackagePaths.Add("/Game");
 
-    TArray< FAssetData > asset_data_list;
+    FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+    AssetRegistryModule.Get().GetAssets(Filter, AssetDataList);
 
-    FARFilter filter;
-    filter.bRecursivePaths = true;
-    filter.PackagePaths.Add( "/Game" );
-    asset_registry_module.Get().GetAssets( filter, asset_data_list );
+    if (GEditor)
+    {
+        UEditorNamingValidatorSubsystem* EditorValidatorSubsystem = GEditor->GetEditorSubsystem<UEditorNamingValidatorSubsystem>();
+        check(EditorValidatorSubsystem);
 
-    auto * editor_validator_subsystem = GEditor->GetEditorSubsystem< UEditorNamingValidatorSubsystem >();
-    check( editor_validator_subsystem );
-
-    // ReSharper disable once CppExpressionWithoutSideEffects
-    editor_validator_subsystem->ValidateAssets( asset_data_list );
+        // ReSharper disable once CppExpressionWithoutSideEffects
+        EditorValidatorSubsystem->ValidateAssets(AssetDataList);
+    }
 
     return true;
 }

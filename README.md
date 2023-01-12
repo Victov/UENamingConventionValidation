@@ -5,12 +5,14 @@ Original readme contents below.
 This fork adds/modifies the following:
 
 1. Refactored code to follow the [Epic C++ Coding Standard](https://docs.unrealengine.com/5.1/en-US/epic-cplusplus-coding-standard-for-unreal-engine/) which mostly means the following:
-    - Change widespread use of `snake_case` to `CapitalCase`
-    - Remove usage of `auto` in favour of explicit types.
+    - Change widespread use of `snake_case` to `CapitalCase`.
+    - Big pass of formatting rules to be more in line with UE engine source code. Mostly changing `void WideCode< FString >( FArg & MyArg )` to `void NormalWidth<FString>(FArg& MyArg)`.
+    - Remove usage of `auto` in favour of explicit types, except when dealing with lambdas.
     - Rename certain booleans to have their proper `b` prefix.
     - Change usage of size-less `int` to sized `int32`
 2. (WORK IN PROGRESS) Fix deprecation warnings and bring code up to date with UE5.1.
 3. (WORK IN PROGRESS) Add sensible defaults to the validator based on [Epics Naming Standard](https://docs.unrealengine.com/5.1/en-US/recommended-asset-naming-conventions-in-unreal-engine-projects/) so that the plugin works out of the box without configuration for 90% of use cases.
+4. (Planned) Allow users to define multiple valid prefixes for a single class type by separating them with a `;`. (e.g. Material can be `MM_`, `M_`, `MI_`)
 
 ## Original Readme
 

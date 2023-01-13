@@ -98,17 +98,30 @@ void UNamingConventionValidationSettings::ResetValidatorClassDescriptionsToEpicD
 
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.ActorComponent"), TEXT("AC_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.AnimInstance"), TEXT("ABP_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.PhysicsAsset"), TEXT("PHYS_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.Material"), TEXT("M_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.Texture"), TEXT("T_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.DataTable"), TEXT("DT_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/UMG.UserWidget"), TEXT("WBP_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/CoreUObject.Enum"), TEXT("E_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/CoreUObject.Struct"), TEXT("F_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.BlueprintFunctionLibrary"), TEXT("BFL_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/AIModule.BTDecorator_BlueprintBase"), TEXT("BTD_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/AIModule.BTService_BlueprintBase"), TEXT("BTS_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/AIModule.BTTask_BlueprintBase"), TEXT("BTT_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/AIModule.BehaviorTree"), TEXT("BT_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.CurveTable"), TEXT("CT_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.SkeletalMesh"), TEXT("SK_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.StaticMesh"), TEXT("SM_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.DataTable"), TEXT("DT_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/CoreUObject.Enum"), TEXT("E_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayAbility"), TEXT("GA_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayAbilityTargetActor"), TEXT("GATA_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayEffect"), TEXT("GE_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayTasks.GameplayTask"), TEXT("GT_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.Material"), TEXT("M_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/PhysicsCore.PhysicalMaterial"), TEXT("PM_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.PhysicsAsset"), TEXT("PHYS_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.SkeletalMesh"), TEXT("SK_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/StateTreeModule.StateTree"), TEXT("ST_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/StateTreeModule.StateTreeConditionBlueprintBase"), TEXT("STC_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.StaticMesh"), TEXT("SM_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/CoreUObject.Struct"), TEXT("F_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/UMG.Widget"), TEXT("WBP_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.Texture"), TEXT("T_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.AnimMontage"), TEXT("AM_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/LevelSequence.LevelSequence"), TEXT("LS_"));
 }
 
 #if WITH_EDITOR

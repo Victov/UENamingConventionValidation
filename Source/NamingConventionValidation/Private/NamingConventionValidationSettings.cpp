@@ -55,7 +55,6 @@ void UNamingConventionValidationSettings::PostProcessSettings()
     for (FNamingConventionValidationClassDescription& ClassDescription : ClassDescriptions)
     {
         ClassDescription.Class = ClassDescription.ClassPath.LoadSynchronous();
-        ensure(IsValid(ClassDescription.Class));
         UE_CLOG(ClassDescription.Class == nullptr, LogNamingConventionValidation, Warning, TEXT("Impossible to get a valid UClass for the class path %s"), *ClassDescription.ClassPath.ToString());
     }
 

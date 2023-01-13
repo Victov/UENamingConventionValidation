@@ -23,28 +23,20 @@ void FindAssetDependencies(const FAssetRegistryModule& AssetRegistryModule, cons
 {
     if (AssetData.IsValid())
     {
-        if (const UObject* Object = AssetData.GetAsset())
+        if (UObject* Object = AssetData.GetAsset())
         {
-            const FName SelectedPackageName = Object->GetOutermost()->GetFName();
-            const FString PackageString = SelectedPackageName.ToString();
+            FAssetIdentifier AssetIdentifier(Object, NAME_None);
 
             if (!DependentAssets.Contains(AssetData))
             {
                 DependentAssets.Add(AssetData);
 
-                TArray<FName> Dependencies;
+                TArray<FAssetDependency> Dependencies;
+                AssetRegistryModule.Get().GetDependencies(AssetIdentifier, Dependencies, UE::AssetRegistry::EDependencyCategory::Package);
 
-                AssetRegistryModule.Get().GetDependencies(SelectedPackageName, Dependencies, UE::AssetRegistry::EDependencyCategory::Package);
-
-                for (const FName& Dependency : Dependencies)
+                for (const FAssetDependency& Dependency : Dependencies)
                 {
-                    const FString DependencyPackageString = Dependency.ToString();
-                    FString DependencyObjectString = FString::Printf(TEXT("%s.%s"), *DependencyPackageString, *FPackageName::GetLongPackageAssetName(DependencyPackageString));
-
-                    // recurse on each dependency
-                    const FName ObjectPath(*DependencyObjectString);
-                    FAssetData DependentAsset = AssetRegistryModule.Get().GetAssetByObjectPath(ObjectPath);
-
+                    FAssetData DependentAsset = AssetRegistryModule.Get().GetAssetByObjectPath(Dependency.AssetId.ToString());
                     FindAssetDependencies(AssetRegistryModule, DependentAsset, DependentAssets);
                 }
             }

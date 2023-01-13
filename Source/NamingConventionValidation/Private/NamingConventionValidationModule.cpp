@@ -19,7 +19,7 @@
 
 #define LOCTEXT_NAMESPACE "NamingConventionValidationModule"
 
-void FindAssetDependencies(const FAssetRegistryModule& AssetRegistryModule, const FAssetData& AssetData, TSet< FAssetData >& DependentAssets)
+void FindAssetDependencies(const FAssetRegistryModule& AssetRegistryModule, const FAssetData& AssetData, TSet<FAssetData>& DependentAssets)
 {
     if (AssetData.IsValid())
     {
@@ -32,7 +32,8 @@ void FindAssetDependencies(const FAssetRegistryModule& AssetRegistryModule, cons
             {
                 DependentAssets.Add(AssetData);
 
-                TArray< FName > Dependencies;
+                TArray<FName> Dependencies;
+
                 AssetRegistryModule.Get().GetDependencies(SelectedPackageName, Dependencies, UE::AssetRegistry::EDependencyCategory::Package);
 
                 for (const FName& Dependency : Dependencies)
@@ -51,7 +52,7 @@ void FindAssetDependencies(const FAssetRegistryModule& AssetRegistryModule, cons
     }
 }
 
-void OnPackageSaved(const FString& /*package_file_name*/, UPackage* Package, FObjectPostSaveContext Context)
+void OnPackageSaved(const FString& /*PackageFileName*/, UPackage* Package, FObjectPostSaveContext Context)
 {
     if (GEditor)
     {

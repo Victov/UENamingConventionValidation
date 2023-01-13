@@ -244,7 +244,7 @@ void UEditorNamingValidatorSubsystem::RegisterBlueprintValidators()
     // Locate all validators (include unloaded)
     const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
     TArray<FAssetData> AllBlueprintAssetData;
-    AssetRegistryModule.Get().GetAssetsByClass(UEditorUtilityBlueprint::StaticClass()->GetFName(), AllBlueprintAssetData, true);
+    AssetRegistryModule.Get().GetAssetsByClass(UEditorUtilityBlueprint::StaticClass()->GetClassPathName(), AllBlueprintAssetData, true);
 
     for (FAssetData& AssetData : AllBlueprintAssetData)
     {
@@ -327,13 +327,14 @@ void UEditorNamingValidatorSubsystem::ValidateOnSave(const TArray<FAssetData>& A
 
 ENamingConventionValidationResult UEditorNamingValidatorSubsystem::DoesAssetMatchNameConvention(FText& ErrorMessage, const FAssetData& AssetData, const FName AssetClass, bool bCanUseEditorValidators) const
 {
-    const UNamingConventionValidationSettings* Settings = GetDefault< UNamingConventionValidationSettings >();
-    static const FName BlueprintGeneratedClassName("BlueprintGeneratedClass");
+    static const FTopLevelAssetPath BlueprintGeneratedClassName("/Script/Engine.BlueprintGeneratedClass");
+    static const FTopLevelAssetPath BlueprintClassName("/Script/Engine.Blueprint");
 
+    const UNamingConventionValidationSettings* Settings = GetDefault< UNamingConventionValidationSettings >();
     FString AssetName = AssetData.AssetName.ToString();
 
     // Starting UE4.27 (?) some blueprints now have BlueprintGeneratedClass as their AssetClass, and their name ends with a _C.
-    if (AssetData.AssetClass == BlueprintGeneratedClassName)
+    if (AssetData.AssetClassPath == BlueprintGeneratedClassName)
     {
         AssetName.RemoveFromEnd(TEXT("_C"), ESearchCase::CaseSensitive);
     }
@@ -365,9 +366,7 @@ ENamingConventionValidationResult UEditorNamingValidatorSubsystem::DoesAssetMatc
         }
     }
 
-    static const FName BlueprintClassName("Blueprint");
-
-    if (AssetData.AssetClass == BlueprintClassName || AssetData.AssetClass == BlueprintGeneratedClassName)
+    if (AssetData.AssetClassPath == BlueprintClassName || AssetData.AssetClassPath == BlueprintGeneratedClassName)
     {
         if (!AssetName.StartsWith(Settings->BlueprintsPrefix))
         {

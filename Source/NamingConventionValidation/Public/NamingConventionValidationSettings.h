@@ -18,7 +18,9 @@ struct FNamingConventionValidationClassDescription
 
     bool operator<(const FNamingConventionValidationClassDescription& Other) const
     {
-        return Priority > Other.Priority || ((Class && Other.Class) ? (Class->GetName() < Other.Class->GetName()) : false);
+        //Make items where class is None show up at the top for config-editing convenience.
+        //Otherwise, when clicking the plus to add a new rule in project settings, the sorting moves the newly added None entry down which is highly annoying.
+        return !IsValid(Class) || Priority > Other.Priority || ((Class && Other.Class) ? (Class->GetName() < Other.Class->GetName()) : false);
     }
 
     UPROPERTY( Config, EditAnywhere, Meta = ( AllowAbstract = true ) )

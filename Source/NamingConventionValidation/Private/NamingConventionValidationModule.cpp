@@ -3,7 +3,7 @@
 #include "EditorNamingValidatorSubsystem.h"
 #include "NamingConventionValidationCommandlet.h"
 
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "ContentBrowserDelegates.h"
 #include "ContentBrowserModule.h"
@@ -168,9 +168,9 @@ void NamingConventionValidationMenuCreationDelegate(FMenuBuilder& MenuBuilder)
 {
     MenuBuilder.BeginSection("NamingConventionValidation", LOCTEXT("NamingConventionValidation", "NamingConventionValidation"));
     MenuBuilder.AddMenuEntry(
-        TAttribute< FText >::Create(&MenuValidateDataGetTitle),
+        TAttribute<FText>::Create(&MenuValidateDataGetTitle),
         LOCTEXT("NamingConventionValidationTooltip", "Validates all naming convention in content directory."),
-        FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
+        FSlateIcon(FAppStyle::GetAppStyleSetName(), "DeveloperTools.MenuIcon"),
         FUIAction(FExecuteAction::CreateStatic(&MenuValidateData)));
     MenuBuilder.EndSection();
 }

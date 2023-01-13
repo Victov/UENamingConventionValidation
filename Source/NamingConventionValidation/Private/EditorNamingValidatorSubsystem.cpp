@@ -2,7 +2,7 @@
 
 #include "NamingConventionValidationSettings.h"
 
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Editor.h"
 #include "EditorNamingValidatorBase.h"
 #include "EditorUtilityBlueprint.h"
@@ -156,7 +156,7 @@ int32 UEditorNamingValidatorSubsystem::ValidateAssets(const TArray< FAssetData >
             if (bShowIfNoFailures && Settings->bLogWarningWhenNoClassDescriptionForAsset)
             {
                 FFormatNamedArguments Arguments;
-                Arguments.Add(TEXT("ClassName"), FText::FromString(AssetData.AssetClass.ToString()));
+                Arguments.Add(TEXT("ClassName"), FText::FromString(AssetData.AssetClassPath.ToString()));
 
                 DataValidationLog.Warning()
                     ->AddToken(FAssetNameToken::Create(AssetData.PackageName.ToString()))
@@ -259,7 +259,8 @@ void UEditorNamingValidatorSubsystem::RegisterBlueprintValidators()
         {
             UObject* Outer = nullptr;
             ResolveName(Outer, ParentClassName, false, false);
-            const UClass* ParentClass = FindObject<UClass>(ANY_PACKAGE, *ParentClassName);
+            const UClass* ParentClass = FindObject<UClass>(nullptr, *ParentClassName);
+            ensure(ParentClass);
             if (!ParentClass->IsChildOf(UEditorNamingValidatorBase::StaticClass()))
             {
                 continue;

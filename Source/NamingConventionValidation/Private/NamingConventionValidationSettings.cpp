@@ -116,6 +116,7 @@ void UNamingConventionValidationSettings::ResetValidatorClassDescriptionsToEpicD
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.SkeletalMesh"), TEXT("SK_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/StateTreeModule.StateTree"), TEXT("ST_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/StateTreeModule.StateTreeConditionBlueprintBase"), TEXT("STC_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/StateTreeModule.StateTreeTaskBlueprintBase"), TEXT("STT_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.StaticMesh"), TEXT("SM_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/CoreUObject.Struct"), TEXT("F_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/UMG.Widget"), TEXT("WBP_"));

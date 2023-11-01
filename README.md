@@ -10,7 +10,7 @@ This fork adds/modifies the following:
     - Remove usage of `auto` in favour of explicit types, except when dealing with lambdas.
     - Rename certain booleans to have their proper `b` prefix.
     - Change usage of size-less `int` to sized `int32`
-2. Fix deprecation warnings and bring code up to date with UE5.1.
+2. Fix deprecation warnings and bring code up to date with UE5.3.
 3. Add sensible defaults to the validator based on [Epics Naming Standard](https://docs.unrealengine.com/5.1/en-US/recommended-asset-naming-conventions-in-unreal-engine-projects/) so that the plugin works out of the box without configuration for 90% of use cases.
 4. (Planned) Allow users to define multiple valid prefixes for a single class type by separating them with a `;`. (e.g. Material can be `MM_`, `M_`, `MI_`)
 

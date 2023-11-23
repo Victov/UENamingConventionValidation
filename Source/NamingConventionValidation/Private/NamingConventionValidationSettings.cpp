@@ -108,7 +108,7 @@ void UNamingConventionValidationSettings::ResetValidatorClassDescriptionsToEpicD
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/CoreUObject.Enum"), TEXT("E_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayAbility"), TEXT("GA_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayAbilityTargetActor"), TEXT("GATA_"));
-    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayModMagnitudeCalculation"), TEXT("MCC_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayModMagnitudeCalculation"), TEXT("MMC_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayEffect"), TEXT("GE_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayCueNotify_Actor"), TEXT("GCN_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayTasks.GameplayTask"), TEXT("GT_"));

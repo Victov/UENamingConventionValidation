@@ -111,6 +111,7 @@ void UNamingConventionValidationSettings::ResetValidatorClassDescriptionsToEpicD
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayModMagnitudeCalculation"), TEXT("MMC_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayEffect"), TEXT("GE_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayCueNotify_Actor"), TEXT("GCN_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayAbilities.GameplayCueNotify"), TEXT("GCN_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/GameplayTasks.GameplayTask"), TEXT("GT_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.Material"), TEXT("M_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/PhysicsCore.PhysicalMaterial"), TEXT("PM_"));

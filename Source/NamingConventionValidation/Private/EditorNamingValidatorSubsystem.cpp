@@ -404,6 +404,9 @@ ENamingConventionValidationResult UEditorNamingValidatorSubsystem::DoesAssetMatc
 
     for (const FNamingConventionValidationClassDescription& ClassDescription : Settings->ClassDescriptions)
     {
+        if (!IsValid(ClassDescription.Class))
+            continue;
+
         const bool bClassFilterMatches = AssetClass->IsChildOf(ClassDescription.Class);
         const bool bClassIsMoreOrSamePrecise = ClassDescription.Class->IsChildOf(MostPreciseClass);
         const bool bClassIsSamePrecise = bClassIsMoreOrSamePrecise && ClassDescription.Class == MostPreciseClass;

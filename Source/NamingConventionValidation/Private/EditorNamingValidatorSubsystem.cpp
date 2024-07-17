@@ -260,8 +260,7 @@ void UEditorNamingValidatorSubsystem::RegisterBlueprintValidators()
             UObject* Outer = nullptr;
             ResolveName(Outer, ParentClassName, false, false);
             const UClass* ParentClass = FindObject<UClass>(nullptr, *ParentClassName);
-            ensure(ParentClass);
-            if (!ParentClass->IsChildOf(UEditorNamingValidatorBase::StaticClass()))
+            if (!ParentClass || !ParentClass->IsChildOf(UEditorNamingValidatorBase::StaticClass()))
             {
                 continue;
             }

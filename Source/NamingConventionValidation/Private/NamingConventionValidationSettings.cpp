@@ -125,6 +125,7 @@ void UNamingConventionValidationSettings::ResetValidatorClassDescriptionsToEpicD
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/UMG.Widget"), TEXT("WBP_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.Texture"), TEXT("T_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.AnimMontage"), TEXT("AM_"));
+    AddDefaultClassDescriptionWithPrefix(TEXT("/Script/Engine.AnimNotify"), TEXT("AN_"));
     AddDefaultClassDescriptionWithPrefix(TEXT("/Script/LevelSequence.LevelSequence"), TEXT("LS_"));
 }
 
